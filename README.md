@@ -1,0 +1,1 @@
+**Hier sollten alle Classen und deren Funktionen genauer beschrieben werden:**
