@@ -51,7 +51,8 @@ public class ColorSensorEV3 {
     }
 
     public void setLight(int color) {
-        sensor.setFloodlight(color);
+        System.out.println(color);
+        sensor.setFloodlight(false);
     }
 
     public float[] getSample() {
@@ -69,12 +70,12 @@ public class ColorSensorEV3 {
     public int getValue2() {
         float[] sample = new float[values.sampleSize()];
         values.fetchSample(sample, 0);
-        return (int) sample[0];
+        return (int) sample[1];
     }
 
     public int getValue3() {
         float[] sample = new float[values.sampleSize()];
         values.fetchSample(sample, 0);
-        return (int) sample[0];
+        return (int) sample[2];
     }
 }
