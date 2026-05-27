@@ -1,15 +1,14 @@
+package Tests;
+
 import Components.*;
 import ev3dev.sensors.EV3Key;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.Color;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-public class AlphaTestTurning {
-
+public class TestReactionTime {
     static MotorEV3 leftMotor;
     static MotorEV3 rightMotor;
     static IRSensor irSensor;
@@ -36,7 +35,8 @@ public class AlphaTestTurning {
             Enter.waitForPress();
 
             driveMode = DriveMode.STRAIGHT;
-            while (irSensor.getDistance() < GROUND_LEVEL) {
+            while (irSensor.getDistance() < GROUND_LEVEL
+                    || driveMode != DriveMode.STRAIGHT) {
                 checkLeftSensor();
 
                 checkRightSensor();
