@@ -3,12 +3,10 @@ import ev3dev.sensors.EV3Key;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.Color;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-public class AlphaTestTurning {
+public class AlphaTestTurningV4 {
 
     static MotorEV3 leftMotor;
     static MotorEV3 rightMotor;
@@ -18,17 +16,14 @@ public class AlphaTestTurning {
     static ColorSensorEV3 leftColor;
     static ColorSensorEV3 rightColor;
 
-    static final int MAX_SPEED_STRAIGHT = 900; //400
-    static final int MAX_SPEED_BACK = 250;
-    static final int MAX_SPEED_TURNNING = 300; //300
+    static final int MAX_SPEED_STRAIGHT = 400;
+    static final int MAX_SPEED_TURNNING = 300;
     static int CALIBRATION_FACTOR = 100;
     static final int GROUND_LEVEL = 20;
     static final int LEFT_SENSOR_VALUE = 368;
     static final int RIGHT_SENSOR_VALUE = 8;
     static DriveMode driveMode = DriveMode.STOP;
     static DriveMode lastDriveMode = DriveMode.STOP;
-    static boolean blackRight;
-    static boolean blackLeft;
 
     public static void main(final String[] args) throws InterruptedException {
 
@@ -39,19 +34,10 @@ public class AlphaTestTurning {
             Enter.waitForPress();
 
             driveMode = DriveMode.STRAIGHT;
-            blackLeft = leftColor.getValue1() < LEFT_SENSOR_VALUE;
-            blackRight = rightColor.getValue1() < RIGHT_SENSOR_VALUE;
-            while (!blackLeft || !blackRight) {
-                if(!blackRight && !blackLeft && driveMode == DriveMode.STOP) {
-                    driveMode = DriveMode.STRAIGHT;
-                }
-
+            while (irSensor.getDistance() < GROUND_LEVEL) {
                 checkLeftSensor();
 
                 checkRightSensor();
-
-                blackLeft = leftColor.getValue1() < LEFT_SENSOR_VALUE;
-                blackRight = rightColor.getValue1() < RIGHT_SENSOR_VALUE;
 
                 if (driveMode != lastDriveMode) {
                     handleDriveModeChange();
@@ -73,65 +59,41 @@ public class AlphaTestTurning {
                 motors.move(MAX_SPEED_STRAIGHT * CALIBRATION_FACTOR / 100, MAX_SPEED_STRAIGHT);
                 break;
             case LEFT_WHITE:
-                motors.move(MAX_SPEED_TURNNING / 3, -MAX_SPEED_TURNNING);
+                motors.move(MAX_SPEED_TURNNING / 2, -MAX_SPEED_TURNNING);
                 break;
             case LEFT_BLACK:
-                motors.move(MAX_SPEED_TURNNING / 3, -MAX_SPEED_TURNNING);
+                motors.move(MAX_SPEED_TURNNING / 5, -MAX_SPEED_TURNNING);
                 break;
             case RIGHT_WHITE:
-                motors.move(-MAX_SPEED_TURNNING, MAX_SPEED_TURNNING / 3);
+                motors.move(-MAX_SPEED_TURNNING, MAX_SPEED_TURNNING / 2);
                 break;
             case RIGHT_BLACK:
-                motors.move(-MAX_SPEED_TURNNING, MAX_SPEED_TURNNING / 3);
+                motors.move(-MAX_SPEED_TURNNING, MAX_SPEED_TURNNING / 5);
                 break;
         }
     }
 
     private static void checkRightSensor() throws InterruptedException {
-        if(blackRight && driveMode != DriveMode.RIGHT_WHITE && driveMode != DriveMode.RIGHT_BLACK) {
+        if(rightColor.getValue1() < RIGHT_SENSOR_VALUE && driveMode != DriveMode.RIGHT_WHITE && driveMode != DriveMode.RIGHT_BLACK) {
             motors.stop();
             TimeUnit.MILLISECONDS.sleep(150);
             driveMode = DriveMode.RIGHT_WHITE;
-            blackRight = rightColor.getValue1() < RIGHT_SENSOR_VALUE;
-        }
-        if(!blackRight && driveMode == DriveMode.RIGHT_WHITE) {
-            motors.move(-MAX_SPEED_BACK, -MAX_SPEED_BACK);
-            TimeUnit.MILLISECONDS.sleep(500);
-            motors.stop();
-            TimeUnit.MILLISECONDS.sleep(50);
-            motors.move(-MAX_SPEED_TURNNING, MAX_SPEED_TURNNING);
-            TimeUnit.MILLISECONDS.sleep(250);
-            motors.stop();
-            driveMode = DriveMode.STOP;
-        } else if (blackRight && driveMode == DriveMode.RIGHT_WHITE) {
+        } else if (rightColor.getValue1() < RIGHT_SENSOR_VALUE && driveMode == DriveMode.RIGHT_WHITE) {
             driveMode = DriveMode.RIGHT_BLACK;
-        } else if (!blackRight && driveMode == DriveMode.RIGHT_BLACK) {
-            driveMode = DriveMode.STOP;
-            TimeUnit.MILLISECONDS.sleep(75);
+        } else if (rightColor.getValue1() > RIGHT_SENSOR_VALUE && driveMode == DriveMode.RIGHT_BLACK) {
+            driveMode = DriveMode.STRAIGHT;
         }
     }
 
     private static void checkLeftSensor() throws InterruptedException {
-        if(blackLeft && driveMode != DriveMode.LEFT_WHITE && driveMode != DriveMode.LEFT_BLACK) {
+        if(leftColor.getValue1() < LEFT_SENSOR_VALUE && driveMode != DriveMode.LEFT_WHITE && driveMode != DriveMode.LEFT_BLACK) {
             motors.stop();
             TimeUnit.MILLISECONDS.sleep(150);
             driveMode = DriveMode.LEFT_WHITE;
-            blackLeft = leftColor.getValue1() < LEFT_SENSOR_VALUE;
-        }
-        if(!blackLeft && driveMode == DriveMode.LEFT_WHITE) {
-            motors.move(-MAX_SPEED_BACK, -MAX_SPEED_BACK);
-            TimeUnit.MILLISECONDS.sleep(500);
-            motors.stop();
-            TimeUnit.MILLISECONDS.sleep(50);
-            motors.move(MAX_SPEED_TURNNING, -MAX_SPEED_TURNNING);
-            TimeUnit.MILLISECONDS.sleep(250);
-            motors.stop();
-            driveMode = DriveMode.STOP;
-        } else if (blackLeft && driveMode == DriveMode.LEFT_WHITE) {
+        } else if (leftColor.getValue1() < LEFT_SENSOR_VALUE && driveMode == DriveMode.LEFT_WHITE) {
             driveMode = DriveMode.LEFT_BLACK;
-        } else if (!blackLeft && driveMode == DriveMode.LEFT_BLACK) {
-            driveMode = DriveMode.STOP;
-            TimeUnit.MILLISECONDS.sleep(75);
+        } else if (leftColor.getValue1() > LEFT_SENSOR_VALUE && driveMode == DriveMode.LEFT_BLACK) {
+            driveMode = DriveMode.STRAIGHT;
         }
     }
 
